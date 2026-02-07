@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f1014">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Hisabee X Pro</title>
+    
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkhpc2FiZWUgWCIsCiAgInNob3J0X25hbWUiOiAiSGlzYWJlZSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGYxMDE0IiwKICAidGhlbWVfY29xvciI6ICIjZmJiZjI0IiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4tYWljb25zLmNvbS9pY29ucy9kZWZhdWx0L3BuZy81MTIvaW5jb21lLWV4cGVuc2UtMTQucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXQp9">
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <div id="toast-box"></div>
+
+    <section id="auth-screen" class="screen active">
+        <div class="auth-glass">
+            <div class="brand">
+                <i class="fa-solid fa-wallet brand-icon"></i>
+                <h2>Hisabee X</h2>
+                <p>Secure Access</p>
+            </div>
+            <div class="pin-dots"><span></span><span></span><span></span><span></span></div>
+            <p id="auth-msg">Enter Passcode</p>
+            <div class="numpad">
+                <button onclick="auth.type(1)">1</button>
+                <button onclick="auth.type(2)">2</button>
+                <button onclick="auth.type(3)">3</button>
+                <button onclick="auth.type(4)">4</button>
+                <button onclick="auth.type(5)">5</button>
+                <button onclick="auth.type(6)">6</button>
+                <button onclick="auth.type(7)">7</button>
+                <button onclick="auth.type(8)">8</button>
+                <button onclick="auth.type(9)">9</button>
+                <button class="icon-btn" onclick="auth.biometric()"><i class="fa-solid fa-fingerprint"></i></button>
+                <button onclick="auth.type(0)">0</button>
+                <button class="icon-btn del" onclick="auth.backspace()"><i class="fa-solid fa-delete-left"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <section id="app-screen" class="screen hidden">
+        <header class="top-bar">
+            <div class="user-info">
+                <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                <div class="greetings"><small id="greeting-time">Welcome</small><h4>My Wallet</h4></div>
+            </div>
+            <button class="search-btn" onclick="ui.toggleSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </header>
+
+        <div id="search-layer" class="hidden">
+            <input type="text" id="search-inp" placeholder="Search transactions..." oninput="core.search(this.value)">
+            <button onclick="ui.toggleSearch()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <main class="main-view">
+            <div id="view-home" class="view-section active">
+                <div class="master-card">
+                    <div class="card-bg"></div>
+                    <div class="card-content">
+                        <span class="lbl">Total Balance (Lifetime)</span>
+                        <h1 id="disp-balance">৳0.00</h1>
+                        <div class="currency-toggle" onclick="core.toggleCurrency()"><span id="disp-sub">Tap for USD</span></div>
+                    </div>
+                    <div class="card-actions">
+                        <button onclick="ui.openModal('order')"><i class="fa-solid fa-arrow-down"></i> Income</button>
+                        <button onclick="ui.openModal('expense')"><i class="fa-solid fa-arrow-up"></i> Expense</button>
+                    </div>
+                </div>
+
+                <div class="profit-checker-box">
+                    <div class="pc-header"><i class="fa-solid fa-calendar-check"></i><span>Check Daily Profit</span></div>
+                    <div class="pc-controls"><input type="date" id="check-date" onchange="core.calculateSpecificProfit()"></div>
+                    <div class="pc-result">
+                        <div class="pc-item"><small>Net Profit</small><h3 id="pc-profit">৳0</h3></div>
+                        <div class="pc-divider"></div>
+                        <div class="pc-item sub"><span class="inc">In: <b id="pc-inc">0</b></span><span class="exp">Ex: <b id="pc-exp">0</b></span></div>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-pill inc"><div class="icon"><i class="fa-solid fa-plus"></i></div><div><small>Today's Income</small><b id="stat-inc">৳0</b></div></div>
+                    <div class="stat-pill exp"><div class="icon"><i class="fa-solid fa-minus"></i></div><div><small>Today's Expense</small><b id="stat-exp">৳0</b></div></div>
+                </div>
+
+                <div class="list-head"><h3>Recent Transactions</h3><span onclick="ui.navigate('list')">See All</span></div>
+                <div id="home-list" class="trans-list"></div>
+            </div>
+
+            <div id="view-calendar" class="view-section hidden">
+                <div class="cal-container">
+                    <div class="cal-header">
+                        <button onclick="core.changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                        <h3 id="cal-month-year">...</h3>
+                        <button onclick="core.changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <div class="cal-weekdays"><div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div></div>
+                    <div id="cal-grid" class="cal-grid"></div>
+                </div>
+                <div id="cal-summary" class="report-card hidden">
+                    <div class="rc-header">
+                        <div class="rc-date"><i class="fa-solid fa-calendar-day"></i><span id="csc-date">...</span></div>
+                        <span class="rc-badge">Daily Report</span>
+                    </div>
+                    <div class="rc-body">
+                        <div class="rc-main-profit"><small>Net Profit</small><h2 id="csc-profit">৳0</h2></div>
+                        <div class="rc-stats-grid">
+                            <div class="rc-stat s-inc"><div class="rc-icon"><i class="fa-solid fa-arrow-down"></i></div><div><small>Income</small><b id="csc-inc">৳0</b></div></div>
+                            <div class="rc-stat s-exp"><div class="rc-icon"><i class="fa-solid fa-arrow-up"></i></div><div><small>Expense</small><b id="csc-exp">৳0</b></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-list" class="view-section hidden">
+                <div class="filter-sticky">
+                    <div class="filter-row">
+                        <button class="f-btn active" onclick="core.filterType('all', this)">All</button>
+                        <button class="f-btn" onclick="core.filterType('order', this)">Income</button>
+                        <button class="f-btn" onclick="core.filterType('expense', this)">Expense</button>
+                    </div>
+                    <div class="filter-row time-filter">
+                        <select id="list-time-select" onchange="core.toggleTimeInput()">
+                            <option value="all">All Time</option>
+                            <option value="date">Specific Date</option>
+                            <option value="month">Specific Month</option>
+                            <option value="year">Specific Year</option>
+                        </select>
+                        <div id="time-input-container" class="hidden"></div>
+                    </div>
+                </div>
+                <div id="full-list" class="trans-list"></div>
+            </div>
+
+            <div id="view-settings" class="view-section hidden">
+                <div class="settings-wrap">
+                    <div id="install-banner" class="set-card hidden">
+                        <button class="set-btn highlight" onclick="pwa.install()">
+                            <i class="fa-solid fa-download"></i> <b>Install App</b>
+                        </button>
+                    </div>
+
+                    <div class="set-card">
+                        <div class="set-item">
+                            <i class="fa-solid fa-coins icon"></i>
+                            <div class="txt"><b>Show USD</b><small>Dual currency display</small></div>
+                            <label class="switch"><input type="checkbox" id="set-usd" onchange="core.saveSettings()"><span class="slider"></span></label>
+                        </div>
+                        <div class="set-item">
+                            <i class="fa-solid fa-money-bill-transfer icon"></i>
+                            <div class="txt"><b>Exchange Rate</b><small>1 USD = ? BDT</small></div>
+                            <input type="number" id="set-rate" value="120" onblur="core.saveSettings()">
+                        </div>
+                    </div>
+                    <div class="set-card">
+                        <button class="set-btn" onclick="auth.initPinChange()"><i class="fa-solid fa-lock"></i> Change PIN</button>
+                        <button class="set-btn" onclick="data.export()"><i class="fa-solid fa-cloud-arrow-down"></i> Backup</button>
+                        <label class="set-btn"><i class="fa-solid fa-cloud-arrow-up"></i> Restore<input type="file" hidden onchange="data.import(this)"></label>
+                        <button class="set-btn danger" onclick="data.reset()"><i class="fa-solid fa-trash"></i> Reset App</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="dock-nav">
+            <button class="dock-btn active" data-target="home" onclick="ui.navigate('home')"><i class="fa-solid fa-house"></i></button>
+            <button class="dock-btn" data-target="calendar" onclick="ui.navigate('calendar')"><i class="fa-regular fa-calendar-days"></i></button>
+            <button class="dock-btn center-fab" onclick="ui.openModal('order')"><i class="fa-solid fa-plus"></i></button>
+            <button class="dock-btn" data-target="list" onclick="ui.navigate('list')"><i class="fa-solid fa-list-ul"></i></button>
+            <button class="dock-btn" data-target="settings" onclick="ui.navigate('settings')"><i class="fa-solid fa-gear"></i></button>
+        </nav>
+    </section>
+
+    <div id="sheet-overlay" class="overlay hidden">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-head">
+                <h3 id="sheet-title">New Entry</h3>
+                <button onclick="ui.closeModal()" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="tx-form" onsubmit="core.saveTx(event)">
+                <input type="hidden" id="edit-id"><input type="hidden" id="tx-type" value="order">
+                
+                <div class="type-pill-group">
+                    <div class="pill active" id="pill-order" onclick="ui.setType('order')">Income</div>
+                    <div class="pill" id="pill-expense" onclick="ui.setType('expense')">Expense</div>
+                </div>
+                
+                <div class="big-input">
+                    <select id="inp-currency"><option value="BDT">৳</option><option value="USD">$</option></select>
+                    <input type="number" id="inp-amount" placeholder="0" step="0.01" required>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-box"><label>Date</label><input type="date" id="inp-date" required></div>
+                    <div class="input-box"><label>Source</label><div class="select-wrapper"><select id="inp-source"></select></div></div>
+                </div>
+
+                <div class="recurring-box">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="inp-recurring">
+                        <span class="checkmark"></span>
+                        Repeat Monthly
+                        <small>Auto-add this on same date every month</small>
+                    </label>
+                </div>
+
+                <div id="extra-fields" class="form-grid hidden">
+                    <div class="input-box full"><label>Platform</label><select id="inp-sub"><option value="Facebook Ads">Facebook Ads</option><option value="Google Ads">Google Ads</option></select></div>
+                </div>
+                <div id="order-fields" class="form-grid">
+                    <div class="input-box"><label>Method</label><select id="inp-payment"><option value="bKash">bKash</option><option value="Nagad">Nagad</option><option value="Bank">Bank</option><option value="Cash">Cash</option><option value="Other">Other</option></select></div>
+                    <div class="input-box"><label>Status</label><select id="inp-status"><option value="Completed">Completed</option><option value="Pending">Pending</option><option value="Cancelled">Cancelled</option></select></div>
+                </div>
+                
+                <div class="sheet-footer">
+                    <button type="button" id="btn-delete" class="del-btn hidden" onclick="core.deleteTx()"><i class="fa-solid fa-trash"></i></button>
+                    <button type="submit" class="save-btn">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="pin-dialog" class="overlay hidden">
+        <div class="dialog-box">
+            <h3 id="pin-title">Security</h3>
+            <p id="pin-desc" style="font-size: 12px; color: #888; margin-bottom: 10px;">Enter PIN</p>
+            <input type="number" id="new-pin-inp" placeholder="••••" maxlength="4">
+            <div class="dialog-btns">
+                <button onclick="document.getElementById('pin-dialog').classList.add('hidden')">Cancel</button>
+                <button class="primary" onclick="auth.processPinChange()">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reset-dialog" class="overlay center-overlay hidden">
+        <div class="dialog-box danger-mode">
+            <div class="warn-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3>Factory Reset</h3>
+            <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">
+                Are you sure? This will permanently delete ALL your data and cannot be undone.
+            </p>
+            <div class="dialog-btns">
+                <button onclick="document.getElementById('reset-dialog').classList.add('hidden')">Cancel</button>
+                <button class="danger-btn" onclick="data.confirmReset()">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
