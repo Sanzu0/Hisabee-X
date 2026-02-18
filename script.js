@@ -96,8 +96,22 @@ const core = {
         const today = core.getTodayStats();
         document.getElementById('stat-inc').innerText = core.fmt(today.inc, 'BDT');
         document.getElementById('stat-exp').innerText = core.fmt(today.exp, 'BDT');
-        const sorted = [...db.state.txs].sort((a,b) => new Date(b.date) - new Date(a.date));
-        core.renderList(sorted.slice(0, 10), 'home-list');
+        
+        core.renderHomeList();
+    },
+    renderHomeList: () => {
+        const dateVal = document.getElementById('check-date').value || new Date().toISOString().split('T')[0];
+        const filteredList = db.state.txs.filter(t => t.date === dateVal);
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        const titleEl = document.getElementById('home-list-title');
+        if(titleEl) {
+            const titlePrefix = dateVal === todayStr ? "Today" : dateVal;
+            titleEl.innerText = `${titlePrefix} Transaction (${filteredList.length})`;
+        }
+        
+        const sortedList = filteredList.sort((a,b) => b.id - a.id);
+        core.renderList(sortedList, 'home-list');
     },
     calculateSpecificProfit: () => {
         const dateVal = document.getElementById('check-date').value; if(!dateVal) return;
@@ -106,6 +120,8 @@ const core = {
         document.getElementById('pc-profit').innerText = core.fmt(inc - exp, 'BDT');
         document.getElementById('pc-inc').innerText = core.fmt(inc, 'BDT');
         document.getElementById('pc-exp').innerText = core.fmt(exp, 'BDT');
+        
+        core.renderHomeList();
     },
     changeMonth: (dir) => { core.currentDate.setDate(1); core.currentDate.setMonth(core.currentDate.getMonth() + dir); core.renderCalendar(); },
     renderCalendar: () => {
